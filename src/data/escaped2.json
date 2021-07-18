@@ -1,0 +1,9 @@
+{
+  "key": {
+    "another": "value",
+    "third": "something",
+    "fourth": 5,
+    "fifth": [1, 2, "three"],
+    "escaped": "\"escaped value\""
+  }
+}

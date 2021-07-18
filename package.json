@@ -1,0 +1,23 @@
+{
+  "name": "json-parser",
+  "version": "1.0.0",
+  "description": "Pure JavaScript JSON parser - built to learn how ASTs work",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/patrickbrett/json-parser.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/patrickbrett/json-parser/issues"
+  },
+  "homepage": "https://github.com/patrickbrett/json-parser#readme",
+  "devDependencies": {
+    "jest": "^27.0.6"
+  }
+}
