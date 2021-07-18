@@ -1,4 +1,11 @@
-const { last, pipe, replaceAll, objMap, inspect } = require("./util");
+const {
+  last,
+  pipe,
+  replaceAll,
+  objMap,
+  stringStartsWith,
+  stringEndsWith,
+} = require("./util");
 
 const { Obj, Arr } = require("./AstElems");
 
@@ -11,7 +18,7 @@ const closerTypes = {
   "]": Arr,
 };
 const excludedChars = [":", ","];
-const specialChars = ["{", "}", "[", "]", ",", ":", "\\"];
+const specialChars = ["{", "}", "[", "]", ",", ":", "\\", "\n"];
 
 const Strings = {
   ESCAPE: "\\",
@@ -21,6 +28,9 @@ const Strings = {
   EMPTY: "",
   NEWLINE: "\n",
   NULL: "null",
+  COMMENT_SINGLE_LINE: "//",
+  COMMENT_START: "/*",
+  COMMENT_END: "*/",
 };
 
 /**
@@ -58,8 +68,7 @@ const Strings = {
   ]
  */
 const generatetokenArray = (jsonString) => {
-  const noNewlines = replaceAll("\n", "")(jsonString);
-  const chars = noNewlines.split(Strings.EMPTY);
+  const chars = jsonString.split(Strings.EMPTY);
 
   const tokenArray = [];
   let isInsideQuotes = false;
@@ -83,7 +92,33 @@ const generatetokenArray = (jsonString) => {
     }
   });
 
-  return tokenArray;
+  let hasOpenMultilineComment = false;
+  const filteredTokenArray = tokenArray.filter((token) => {
+    const startComment = stringStartsWith(token, Strings.COMMENT_START);
+    const endComment = stringEndsWith(token, Strings.COMMENT_END);
+
+    // Handle newlines and single line comments
+    if (
+      token === Strings.NEWLINE ||
+      stringStartsWith(token, Strings.COMMENT_SINGLE_LINE)
+    ) {
+      return false;
+    }
+
+    // Handle multi line comments
+    if (startComment || endComment) {
+      hasOpenMultilineComment = !endComment;
+      return false;
+    }
+    if (hasOpenMultilineComment) {
+      return false;
+    }
+
+    // No comments or newlines, pass token through
+    return true;
+  });
+
+  return filteredTokenArray;
 };
 
 /**

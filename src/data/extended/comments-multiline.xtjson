@@ -1,0 +1,11 @@
+// this is a comment at the top
+{
+  "key": "value",
+  // this is a comment
+  "something": { "one": [2, 3] /* this is a
+  multiline comment
+  that takes up three lines */ },
+  "another": "comments in // strings are not removed",
+  "and": "neither /* are nested */ comments"
+}
+// this is another comment

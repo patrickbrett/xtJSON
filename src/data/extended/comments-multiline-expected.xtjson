@@ -1,0 +1,6 @@
+{
+  "key": "value",
+  "something": { "one": [2, 3] },
+  "another": "comments in // strings are not removed",
+  "and": "neither /* are nested */ comments"
+}

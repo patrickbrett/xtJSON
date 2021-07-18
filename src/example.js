@@ -6,9 +6,9 @@
  */
 
 const { read, write, inspect } = require("./util");
-const parseJson = require("./jsonParser");
+const parseJson = require("./xtJsonParser");
 
-const exampleJson = read("./data/escaped1.json");
+const exampleJson = read("./data/extended/comments-multiline.xtjson");
 const parsed = parseJson(exampleJson);
 inspect(parsed);
 write("out.json", parsed);

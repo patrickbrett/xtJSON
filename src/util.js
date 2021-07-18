@@ -51,6 +51,7 @@ const pipe = (init, funcs) => {
   let out = init;
   funcs.forEach((func) => {
     out = func(out);
+    console.log(out);
   });
   return out;
 };
@@ -83,4 +84,20 @@ const objMap = (obj, mapFunc) => {
   return newObj;
 };
 
-module.exports = { last, inspect, read, write, pipe, replaceAll, objMap };
+const stringStartsWith = (string, startsWith) =>
+  string.substr(0, startsWith.length) === startsWith;
+
+const stringEndsWith = (string, endsWith) =>
+  string.substr(string.length - endsWith.length) === endsWith;
+
+module.exports = {
+  last,
+  inspect,
+  read,
+  write,
+  pipe,
+  replaceAll,
+  objMap,
+  stringStartsWith,
+  stringEndsWith,
+};
