@@ -163,7 +163,7 @@ const putSubvalue = (stack, toAdd, toAddPendingKey) => {
  * first token ('{' or '['), and so the first returned value will be for the root
  * node of the tree.
  */
-const processElem = (stack, promises) => (elem) => {
+const processElem = (stack) => async (elem) => {
   // Skip colons and commas as they do not directly add meaning
   if (excludedChars.includes(elem)) return;
 
@@ -192,7 +192,7 @@ const processElem = (stack, promises) => (elem) => {
   const strippedElem = replaceAll(Strings.QUOTE, Strings.EMPTY)(elem);
 
   // Now identify how the value should be parsed - here is where we handle nulls, escapes, etc
-  const parsedVal = (() => {
+  const parsedVal = await (() => {
     const unbookmarked = unbookmark(elem);
 
     // Return null values as-is
@@ -214,9 +214,7 @@ const processElem = (stack, promises) => (elem) => {
 
     // Handle remote fetches
     if (stringStartsWith(elem, [Strings.TILDE, Strings.OPEN_BRACKET].join('')) && stringEndsWith(elem, Strings.CLOSE_BRACKET)) {
-      const promise = remoteFetch(unbookmark(elem, 2, 1));
-      promises.push({ promise });
-      return { promise };
+      return remoteFetch(unbookmark(elem, 2, 1));
     }
 
     // If the string is not escaped, return the string stripped of all quotes
@@ -262,14 +260,19 @@ const processElem = (stack, promises) => (elem) => {
     pendingKey: null
   }
  */
-const generateAst = (tokenArray) => {
+const generateAst = async (tokenArray) => {
   const stack = [];
-  const promises = [];
   // We reference the first element as processElem will always return the root node
   // of the tree when it is called on the first element.
   // We must process all elements however, as these become children of the root.
-  const tree = tokenArray.map(processElem(stack, promises))[0];
-  return { ast: tree, promises };
+  let root = null;
+  for (elem of tokenArray) {
+    const tree = await processElem(stack)(elem);
+    if (!root) {
+      root = tree;
+    }
+  }
+  return root;
 };
 
 /**
@@ -313,19 +316,6 @@ const parseAst = (ast) => {
   }
 };
 
-const parseAstWrapper = ({ ast, promises }) => ({ jsObject: parseAst(ast), promises });
-
-const awaitPromises = async ({ jsObject, promises }) => {
-  await Promise.all(promises.map(p => p.promise));
-  // promises.forEach(p => {
-  //   console.log(p);
-  //   p.promise.then(res => {
-  //     console.log(res);
-  //   });
-  // })
-  return jsObject;
-}
-
 /**
  * Compiles the relevant functions into a pipeline consisting of generating an AST array,
  * turning that array into an actual AST, and then parsing that AST into a JSON object.
@@ -333,6 +323,6 @@ const awaitPromises = async ({ jsObject, promises }) => {
  * @returns JavaScript object containing the parsed JSON
  */
 const parseJson = (jsonString) =>
-  pipe(jsonString, [generatetokenArray, generateAst, parseAstWrapper, awaitPromises]);
+  pipe(jsonString, [generatetokenArray, generateAst, parseAst]);
 
 module.exports = parseJson;
