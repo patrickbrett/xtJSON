@@ -19,21 +19,22 @@ const regularTests = [
 const extendedTests = [
   ["comments", "correctly parses file with comments"],
   ["comments-multiline", "correctly parses file with multiline comments"],
+  ["remote", "correctly parses file with reference to remote json"],
 ];
 
 regularTests.forEach(([fname, desc]) => {
-  test(`regular - ${desc}`, () => {
+  test(`regular - ${desc}`, async () => {
     const jsonString = read(`./data/regular/${fname}.xtjson`);
-    const parsed = jsonParser(jsonString);
+    const parsed = await jsonParser(jsonString);
     expect(parsed).toEqual(JSON.parse(jsonString));
   });
 });
 
 extendedTests.forEach(([fname, desc]) => {
-  test(`extended - ${desc}`, () => {
+  test(`extended - ${desc}`, async () => {
     const jsonString = read(`./data/extended/${fname}.xtjson`);
     const expectedJsonString = read(`./data/extended/${fname}-expected.xtjson`);
-    const parsed = jsonParser(jsonString);
+    const parsed = await jsonParser(jsonString);
     expect(parsed).toEqual(JSON.parse(expectedJsonString));
   });
 });

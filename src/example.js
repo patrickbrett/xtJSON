@@ -12,7 +12,5 @@ const parseJson = require("./xtJsonParser");
   const exampleJson = read("./data/extended/remote.xtjson");
   const parsed = await parseJson(exampleJson);
   inspect(parsed);
-  console.log('jj', JSON.stringify(parsed));
-  
   write("out.json", parsed);
 })();

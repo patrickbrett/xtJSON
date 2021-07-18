@@ -7,7 +7,7 @@ const {
   stringEndsWith,
   stringBookmarkedBy,
   unbookmark,
-  remoteFetch
+  remoteFetch,
 } = require("./util");
 
 const { Obj, Arr } = require("./AstElems");
@@ -34,10 +34,10 @@ const Strings = {
   COMMENT_SINGLE_LINE: "//",
   COMMENT_START: "/*",
   COMMENT_END: "*/",
-  BACKTICK: '`',
-  OPEN_BRACKET: '(',
-  CLOSE_BRACKET: ')',
-  TILDE: '~'
+  BACKTICK: "`",
+  OPEN_BRACKET: "(",
+  CLOSE_BRACKET: ")",
+  TILDE: "~",
 };
 
 /**
@@ -84,7 +84,15 @@ const generatetokenArray = (jsonString) => {
   chars.forEach((char, i) => {
     const prevChar = i ? chars[i - 1] : null;
 
-    if ([Strings.QUOTE, Strings.BACKTICK, Strings.OPEN_BRACKET, Strings.CLOSE_BRACKET].includes(char) && prevChar !== Strings.ESCAPE) {
+    if (
+      [
+        Strings.QUOTE,
+        Strings.BACKTICK,
+        Strings.OPEN_BRACKET,
+        Strings.CLOSE_BRACKET,
+      ].includes(char) &&
+      prevChar !== Strings.ESCAPE
+    ) {
       isInsideQuotes = !isInsideQuotes;
     }
 
@@ -213,8 +221,11 @@ const processElem = (stack) => async (elem) => {
     }
 
     // Handle remote fetches
-    if (stringStartsWith(elem, [Strings.TILDE, Strings.OPEN_BRACKET].join('')) && stringEndsWith(elem, Strings.CLOSE_BRACKET)) {
-      return remoteFetch(unbookmark(elem, 2, 1));
+    if (
+      stringStartsWith(elem, [Strings.TILDE, Strings.OPEN_BRACKET].join("")) &&
+      stringEndsWith(elem, Strings.CLOSE_BRACKET)
+    ) {
+      return remoteFetch(unbookmark(elem, 2, 1)).then(parseJson);
     }
 
     // If the string is not escaped, return the string stripped of all quotes

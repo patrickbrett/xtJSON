@@ -52,7 +52,6 @@ const pipe = async (init, funcs) => {
   let out = init;
   for (func of funcs) {
     out = await func(out);
-    console.log(out);
   }
   return out;
 };
@@ -93,16 +92,18 @@ const stringEndsWith = (string, endsWith) =>
 
 /**
  * Returns whether a string starts AND ends with a particular substring.
- * 
+ *
  * @param {*} string string to search
  * @param {*} bookmark substring to find
  * @returns whether the string starts AND ends with the bookmark
  */
-const stringBookmarkedBy = (string, bookmark) => [stringStartsWith, stringEndsWith].every(f => f(string, bookmark));
+const stringBookmarkedBy = (string, bookmark) =>
+  [stringStartsWith, stringEndsWith].every((f) => f(string, bookmark));
 
-const unbookmark = (string, left = 1, right = 1) => string.substr(left, string.length - left - right);
+const unbookmark = (string, left = 1, right = 1) =>
+  string.substr(left, string.length - left - right);
 
-const remoteFetch = url => fetch(url).then(res => res.json());
+const remoteFetch = (url) => fetch(url).then((res) => res.text());
 
 module.exports = {
   last,
@@ -116,5 +117,5 @@ module.exports = {
   stringEndsWith,
   stringBookmarkedBy,
   unbookmark,
-  remoteFetch
+  remoteFetch,
 };
