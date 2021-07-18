@@ -87,10 +87,7 @@ const generateTokenArray = (jsonString) => {
     const prevChar = i ? chars[i - 1] : null;
 
     if (
-      [
-        Strings.QUOTE,
-        Strings.BACKTICK,
-      ].includes(char) &&
+      [Strings.QUOTE, Strings.BACKTICK].includes(char) &&
       prevChar !== Strings.ESCAPE
     ) {
       isInsideQuotes = !isInsideQuotes;
@@ -174,74 +171,81 @@ const putSubvalue = (stack, toAdd, toAddPendingKey) => {
  * first token ('{' or '['), and so the first returned value will be for the root
  * node of the tree.
  */
-const processElem = (stack, safe) => async (elem) => {
-  // Skip colons and commas as they do not directly add meaning
-  if (excludedChars.includes(elem)) return;
+const processElem =
+  (stack, { safe, remoteSafe }) =>
+  async (elem) => {
+    // Skip colons and commas as they do not directly add meaning
+    if (excludedChars.includes(elem)) return;
 
-  // Handle opening braces ('{', '[' and '(')
-  if (Object.keys(openerTypes).includes(elem)) {
-    // Create the appropriate AST element for the opening brace
-    const astElem = new openerTypes[elem]();
-    // Go one level deeper in the stack
-    stack.push(astElem);
-    // Return the AST element we created so that it can be used if it is the root
-    return astElem;
-  }
-
-  // Handle closing braces ('}', ']' and ')')
-  if (Object.keys(closerTypes).includes(elem)) {
-    if (last(stack) instanceof closerTypes[elem]) {
-      // We move up one level in the stack and insert the relevant subtree into its parent
-      putSubvalue(stack, stack.pop());
-    }
-    return; // no return value if we received a closer type
-  }
-
-  // If we've made it to here, the type is a regular value (string, number, null etc)
-
-  // Strip the value of quotes
-  const strippedElem = replaceAll(Strings.QUOTE, Strings.EMPTY)(elem);
-
-  // Now identify how the value should be parsed - here is where we handle nulls, escapes, etc
-  const parsedVal = await (() => {
-    const unbookmarked = unbookmark(elem);
-
-    // Return null values as-is
-    if (elem === Strings.NULL) return null;
-    // If the string is escaped, then allow its quotation marks to remain,
-    // but strip out the escape characters
-    if (elem.includes(Strings.ESCAPE)) {
-      // Remove first and last character, which are quotation marks
-      return replaceAll(Strings.DOUBLE_ESCAPE, Strings.EMPTY)(unbookmarked);
+    // Handle opening braces ('{', '[' and '(')
+    if (Object.keys(openerTypes).includes(elem)) {
+      // Create the appropriate AST element for the opening brace
+      const astElem = new openerTypes[elem]();
+      // Go one level deeper in the stack
+      stack.push(astElem);
+      // Return the AST element we created so that it can be used if it is the root
+      return astElem;
     }
 
-    // Handle arithmetic expressions and functions
-    if (stringBookmarkedBy(elem, Strings.BACKTICK)) {
-      // Note: not sanitised!
-      // Hence use safe mode on any untrusted xtJSON,
-      // otherwise arbitrary code can be injected.
-      return safe ? unbookmarked : eval(unbookmarked);
+    // Handle closing braces ('}', ']' and ')')
+    if (Object.keys(closerTypes).includes(elem)) {
+      if (last(stack) instanceof closerTypes[elem]) {
+        // We move up one level in the stack and insert the relevant subtree into its parent
+        putSubvalue(stack, stack.pop());
+      }
+      return; // no return value if we received a closer type
     }
 
-    // Handle remote fetches
-    if (
-      stringStartsWith(elem, [Strings.TILDE, Strings.QUOTE].join(Strings.EMPTY)) &&
-      stringEndsWith(elem, Strings.QUOTE)
-    ) {
-      const unbookmarked = unbookmark(elem, 2, 1);
-      return safe ? unbookmarked : remoteFetch(unbookmarked).then(parseJson);
-    }
+    // If we've made it to here, the type is a regular value (string, number, null etc)
 
-    // If the string is not escaped, return the string stripped of all quotes
-    // and if it is numeric, format it as a number
-    if (Number.isNaN(Number(strippedElem))) return strippedElem;
-    return Number(strippedElem);
-  })();
+    // Strip the value of quotes
+    const strippedElem = replaceAll(Strings.QUOTE, Strings.EMPTY)(elem);
 
-  // The value stripped of quotes will always be used as a key,
-  // even if the actual value is a number or similar
-  putSubvalue(stack, parsedVal, strippedElem);
-};
+    // Now identify how the value should be parsed - here is where we handle nulls, escapes, etc
+    const parsedVal = await (() => {
+      const unbookmarked = unbookmark(elem);
+
+      // Return null values as-is
+      if (elem === Strings.NULL) return null;
+      // If the string is escaped, then allow its quotation marks to remain,
+      // but strip out the escape characters
+      if (elem.includes(Strings.ESCAPE)) {
+        // Remove first and last character, which are quotation marks
+        return replaceAll(Strings.DOUBLE_ESCAPE, Strings.EMPTY)(unbookmarked);
+      }
+
+      // Handle arithmetic expressions and functions
+      if (stringBookmarkedBy(elem, Strings.BACKTICK)) {
+        // Note: not sanitised!
+        // Hence use safe mode on any untrusted xtJSON,
+        // otherwise arbitrary code can be injected.
+        return safe ? unbookmarked : eval(unbookmarked);
+      }
+
+      // Handle remote fetches
+      if (
+        stringStartsWith(
+          elem,
+          [Strings.TILDE, Strings.QUOTE].join(Strings.EMPTY)
+        ) &&
+        stringEndsWith(elem, Strings.QUOTE)
+      ) {
+        const unbookmarked = unbookmark(elem, 2, 1);
+        return safe
+          ? unbookmarked
+          : remoteFetch(unbookmarked).then(parseJson(remoteSafe, remoteSafe));
+      }
+
+      // If the string is not escaped, return the string stripped of all quotes
+      // and if it is numeric, format it as a number
+      if (Number.isNaN(Number(strippedElem))) return strippedElem;
+      return Number(strippedElem);
+    })();
+
+    // The value stripped of quotes will always be used as a key,
+    // even if the actual value is a number or similar
+    putSubvalue(stack, parsedVal, strippedElem);
+  };
 
 /**
  * Processes the AST token array into a full AST tree.
@@ -275,20 +279,22 @@ const processElem = (stack, safe) => async (elem) => {
     pendingKey: null
   }
  */
-const generateAst = ({ safe }) => async (tokenArray) => {
-  const stack = [];
-  // We reference the first element as processElem will always return the root node
-  // of the tree when it is called on the first element.
-  // We must process all elements however, as these become children of the root.
-  let root = null;
-  for (elem of tokenArray) {
-    const tree = await processElem(stack, safe)(elem);
-    if (!root) {
-      root = tree;
+const generateAst =
+  ({ safe, remoteSafe }) =>
+  async (tokenArray) => {
+    const stack = [];
+    // We reference the first element as processElem will always return the root node
+    // of the tree when it is called on the first element.
+    // We must process all elements however, as these become children of the root.
+    let root = null;
+    for (elem of tokenArray) {
+      const tree = await processElem(stack, { safe, remoteSafe })(elem);
+      if (!root) {
+        root = tree;
+      }
     }
-  }
-  return root;
-};
+    return root;
+  };
 
 /**
  * Recursively parses the AST into a JavaScript object.
@@ -340,9 +346,16 @@ const parseAst = (ast) => {
  * @param {*} jsonString stringified JSON to parse
  * @returns JavaScript object containing the parsed JSON
  */
-const parseJson = (safe) => (jsonString) =>
-  pipe(jsonString, [generateTokenArray, generateAst({ safe }), parseAst]);
+const parseJson = (safe, remoteSafe) => (jsonString) =>
+  pipe(jsonString, [
+    generateTokenArray,
+    generateAst({ safe, remoteSafe }),
+    parseAst,
+  ]);
 
-module.exports = parseJson(false);
-
-module.exports.safe = parseJson(true);
+// Default: remote embedding enabled, but remote-embedded data loaded in safe mode
+module.exports = parseJson(false, true);
+// Safe mode: disables remote embedding and eval()
+module.exports.safe = parseJson(true, true);
+// Remote unsafe: even remote data can use remote embedding and eval()
+module.exports.remoteUnsafe = parseJson(false, false);

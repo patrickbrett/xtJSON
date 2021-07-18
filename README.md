@@ -7,13 +7,14 @@ eXTended JSON - JSON with comments, function calls, mathematical expression eval
 This project is the natural extension of my bare bones [JSON Parser](https://github.com/patrickbrett/json-parser), which aims for feature parity with the `JSON.parse` command.
 
 xtJSON allows for some pretty expressive and flexible constructs:
+
 ## Supported features
 
 - `{ "comments": "both" /* inline */ }`
 - `// and on their own line...`
 - `{ "sets": (1, 2, 3, 4) }`
-- ```{ "functions": `(a, b) => a + b` }```
-- ```{ "evaluation-of-inline-expressions": `1 + 2 + 3 / 8 * 15` }```
+- `` { "functions": `(a, b) => a + b` } ``
+- `` { "evaluation-of-inline-expressions": `1 + 2 + 3 / 8 * 15` } ``
 - `{ "requests-for": ~"https://remote.json.documents" }`
 - plus everything normal JSON can do 😊
 
@@ -111,7 +112,8 @@ This resolves to:
 }
 ```
 
-Note that embedded data is *itself* treated as xtJSON, and can therefore contain further remote requests. This behaviour has not been tested and could lead to infinite self-referential loops or long loading times. Externally loaded JSON files can also embed expressions which may be dangerous - only load data from trusted sources!
+Note that embedded data is _itself_ treated as xtJSON, however remote data is automatically loaded in safe mode. If you _really_ want to load remote data unsafely (so that you can use function expressions and so on in the remote data), then call `jsonParser.remoteUnsafe(...)` instead of just `jsonParser`. This behaviour has not been tested and could lead to infinite self-referential loops or long loading times. Externally loaded JSON files can also embed arbtirary code which may be dangerous - only load data from trusted sources!
+
 ## How it works
 
 The parser processes data through four stages:

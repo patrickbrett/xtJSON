@@ -39,13 +39,13 @@ extendedTests.forEach(([fname, desc]) => {
   });
 });
 
-test('extended - safe - does not load remote file', async () => {
+test("extended - safe - does not load remote file", async () => {
   const jsonString = read(`./data/extended/remote.xtjson`);
-  const expectedJsonString = read(`./data/extended/remote-expected-safe.xtjson`);
+  const expectedJsonString = read(
+    `./data/extended/remote-expected-safe.xtjson`
+  );
   const parsed = await xtJsonParser.safe(jsonString);
   expect(parsed).toEqual(JSON.parse(expectedJsonString));
-})
+});
 
-test('extended - correctly parses file with functions', async () => {
-
-})
+test("extended - correctly parses file with functions", async () => {});
