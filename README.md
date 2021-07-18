@@ -20,9 +20,9 @@ xtJSON allows for some pretty expressive and flexible constructs:
 
 ## Should I use this in my project?
 
-Sure, I'm not going to stop you. However, there are a number of inherent security issues about the approaches taken here which mean you really shouldn't use this for anything important, especially if you plan on loading xtJSON documents you didn't write yourself.
+Sure, I'm not going to stop you. This parser can do some pretty cool stuff and I can think of plenty of interesting use cases.
 
-xtJSON is powerful enough that it effectively allows you to embed arbitrary JavaScript code in config files, and the parser itself makes web requests that the documents specify. It's enough to give your company's compliance department an aneurysm or three, even with the 'safe mode' option which blocks the more dangerous features.
+Just be aware that there are some security concerns. xtJSON is powerful enough that it effectively allows you to embed arbitrary JavaScript code in config files, and the parser itself makes web requests that the documents specify. It's enough to give your company's compliance department an aneurysm or three, even with the 'safe mode' option which blocks the more dangerous features.
 
 Not to mention this is just a side project and I don't plan on maintaining it actively.
 
@@ -68,7 +68,11 @@ Sets are denoted by rounded brackets: `(` and `)`. They resolve into regular Jav
 }
 ```
 
-The first two result in functions that can be called on the parsed JavaScript object. The third resolves to the number 7.
+Any valid JavaScript expression, including mathematical expressions and functions, can be placed in backticks and they will be imported into the object as their resolved values.
+
+The first two of the examples above result in functions that can be called on the parsed JavaScript object. The third resolves to the number 7.
+
+Safe mode disables this feature.
 
 ### Remote document embedding
 
@@ -112,7 +116,42 @@ This resolves to:
 }
 ```
 
-Note that embedded data is _itself_ treated as xtJSON, however remote data is automatically loaded in safe mode. If you _really_ want to load remote data unsafely (so that you can use function expressions and so on in the remote data), then call `jsonParser.remoteUnsafe(...)` instead of just `jsonParser`. This behaviour has not been tested and could lead to infinite self-referential loops or long loading times. Externally loaded JSON files can also embed arbtirary code which may be dangerous - only load data from trusted sources!
+This feature is disabled in safe mode.
+
+Note that embedded data is _itself_ treated as xtJSON, and therefore allows comments, sets, etc. However, by default, remote data is automatically loaded using safe mode, so it can't resolve function expressions or more remote data. If you _really_ want to load remote data unsafely, then call `jsonParser.remoteUnsafe(...)` instead of just `jsonParser`. This behaviour has not been tested and could lead to infinite self-referential loops or long loading times. Externally loaded JSON files can also embed arbtirary code which may be dangerous - only load data from trusted sources!
+
+## How to use
+
+### Using the module
+
+This module is currently not on NPM, so you will need to clone it locally. You can then import like so:
+
+```
+const jsonParser = require('./index'); // replace with appropriate path to index of the module
+
+const run = async () => {
+  const parsed = await jsonParser('{ "test": "value" }');
+  console.log(parsed);
+};
+
+run();
+```
+
+See `src/example.js` for a more elaborate example that reads a file, parses the output and writes back to another file.
+
+### Safe mode
+
+Naturally, remote requests and arbitrary function execution aren't particularly safe. If you'd like to use xtJSON without them, call the module like this instead:
+
+```
+const parsed = await jsonParser.safe('{ "test": "value" }');
+```
+
+### Running tests
+
+Unit tests for all major use cases are included. To run them, execute:
+
+`npm test`
 
 ## How it works
 
@@ -197,39 +236,6 @@ on `Obj` instances. These are used to allow the data to be structured in the app
 
 The parsed JavaScript object is the output of the algorithm and is designed to mimic
 the output of the native `JSON.parse` function, of course with additional magic features discussed above 🦄
-
-## How to use
-
-### Using the module
-
-This module is currently not on NPM, so you will need to clone it locally. You can then import like so:
-
-```
-const jsonParser = require('./index'); // replace with appropriate path to index of the module
-
-const run = async () => {
-  const parsed = await jsonParser('{ "test": "value" }');
-  console.log(parsed);
-};
-
-run();
-```
-
-See `src/example.js` for a more elaborate example that reads a file, parses the output and writes back to another file.
-
-### Safe mode
-
-Naturally, remote requests and arbitrary function execution aren't particularly safe. If you'd like to use xtJSON without them, call the module like this instead:
-
-```
-const parsed = await jsonParser.safe('{ "test": "value" }');
-```
-
-### Running tests
-
-Unit tests for all major use cases are included. To run them, execute:
-
-`npm test`
 
 ## Areas for improvement
 
