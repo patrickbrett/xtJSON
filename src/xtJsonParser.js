@@ -153,6 +153,9 @@ const putSubvalue = (stack, toAdd, toAddPendingKey) => {
   if (lastElem instanceof Arr) {
     // Insert the value into the array
     lastElem.edges.push(toAdd);
+  } else if (lastElem instanceof _Set) {
+    // Insert the value into the set
+    lastElem.edges.add(toAdd);
   } else if (lastElem instanceof Obj) {
     // If we've already received the key, then insert the value under that key
     if (lastElem.pendingKey) {
@@ -177,7 +180,7 @@ const processElem = (stack) => async (elem) => {
   // Skip colons and commas as they do not directly add meaning
   if (excludedChars.includes(elem)) return;
 
-  // Handle opening braces ('{' and '[')
+  // Handle opening braces ('{', '[' and '(')
   if (Object.keys(openerTypes).includes(elem)) {
     // Create the appropriate AST element for the opening brace
     const astElem = new openerTypes[elem]();
@@ -187,7 +190,7 @@ const processElem = (stack) => async (elem) => {
     return astElem;
   }
 
-  // Handle closing braces ('}' and ']')
+  // Handle closing braces ('}', ']' and ')')
   if (Object.keys(closerTypes).includes(elem)) {
     if (last(stack) instanceof closerTypes[elem]) {
       // We move up one level in the stack and insert the relevant subtree into its parent
@@ -228,11 +231,6 @@ const processElem = (stack) => async (elem) => {
       stringEndsWith(elem, Strings.QUOTE)
     ) {
       return remoteFetch(unbookmark(elem, 2, 1)).then(parseJson);
-    }
-
-    // Handle sets
-    if (stringStartsWith(elem, Strings.OPEN_BRACKET) && stringEndsWith(elem, Strings.CLOSE_BRACKET)) {
-      return unbookmark(elem).then
     }
 
     // If the string is not escaped, return the string stripped of all quotes
@@ -328,6 +326,9 @@ const parseAst = (ast) => {
     // Dealing with an array, map each of its elements
     // over this parseAst function recursively
     return ast.edges.map(parseAst);
+  } else if (ast instanceof _Set) {
+    // Dealing with a set, map each of its elements over this parseAst function recursively
+    return new Set(Array.from(ast.edges).map(parseAst));
   } else {
     // Dealing with a raw value (number, string, null etc) so just return it
     return ast;

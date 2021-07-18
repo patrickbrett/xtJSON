@@ -9,7 +9,7 @@ const { read, write, inspect } = require("./util");
 const parseJson = require("./xtJsonParser");
 
 (async () => {
-  const exampleJson = read("./data/extended/remote.xtjson");
+  const exampleJson = read("./data/extended/sets-nested.xtjson");
   const parsed = await parseJson(exampleJson);
   inspect(parsed);
   write("out.json", parsed);
