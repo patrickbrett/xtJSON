@@ -4,7 +4,7 @@ eXTended JSON - JSON with comments, function calls, mathematical expression eval
 
 ## About
 
-This project is the natural extension of [JSON Parser](https://github.com/patrickbrett/json-parser), which aims for feature parity with the `JSON.parse` command.
+This project is the natural extension of [JSON Parser](https://github.com/patrickbrett/json-parser), which aims for feature parity with the `JSON.parse` command. The first project was built to understand how parsers work, whereas this project was built to extend on that knowledge and see how far JSON as a format can be pushed.
 
 xtJSON allows for some pretty expressive and flexible constructs:
 
