@@ -11,16 +11,17 @@ xtJSON allows for some pretty expressive and flexible constructs:
 
 - `{ "comments": "both" /* inline */ }`
 - `// and on their own line...`
+- `{ "sets": (1, 2, 3, 4) }`
 - ```{ "functions": `(a, b) => a + b` }```
 - ```{ "evaluation-of-inline-expressions": `1 + 2 + 3 / 8 * 15` }```
-- `{ "requests-for": ~(https://remote.json.documents) }`
+- `{ "requests-for": ~"https://remote.json.documents" }`
 - plus everything normal JSON can do 😊
 
 ## Should I use this in my project?
 
 Sure, I'm not going to stop you. However, there are a number of inherent security issues about the approaches taken here which mean you really shouldn't use this for anything important, especially if you plan on loading xtJSON documents you didn't write yourself.
 
-xtJSON is powerful enough that it effectively allows you to embed arbitrary JavaScript code in config files, and the parser itself makes web requests that the documents specify. It's enough to give your company's compliance department an aneurysm or three.
+xtJSON is powerful enough that it effectively allows you to embed arbitrary JavaScript code in config files, and the parser itself makes web requests that the documents specify. It's enough to give your company's compliance department an aneurysm or three, even with the 'safe mode' option which blocks the more dangerous features.
 
 Not to mention this is just a side project and I don't plan on maintaining it actively.
 
@@ -44,6 +45,18 @@ I just wanted to learn about syntax trees, mkay? 😉
 
 Comment like you would in a regular JavaScript file. Easy!
 
+### Sets
+
+```
+{
+  "array": [1, 2, 3, 4, 5],
+  "set": (1, 2, 3, "string"),
+  "obj": {},
+}
+```
+
+Sets are denoted by rounded brackets: `(` and `)`. They resolve into regular JavaScript sets.
+
 ### Functions and mathematical expressions
 
 ```
@@ -54,7 +67,7 @@ Comment like you would in a regular JavaScript file. Easy!
 }
 ```
 
-The first two result in functions that can be called on the parsed JavaScript object. The third resolved to the number 7.
+The first two result in functions that can be called on the parsed JavaScript object. The third resolves to the number 7.
 
 ### Remote document embedding
 
@@ -64,7 +77,7 @@ The first two result in functions that can be called on the parsed JavaScript ob
     "here": "is",
     "some": "data"
   },
-  "remote": ~(https://raw.githubusercontent.com/patrickbrett/json-parser/main/src/data/complex1.json)
+  "remote": ~"https://raw.githubusercontent.com/patrickbrett/json-parser/main/src/data/complex1.json"
 }
 ```
 
@@ -201,6 +214,14 @@ run();
 ```
 
 See `src/example.js` for a more elaborate example that reads a file, parses the output and writes back to another file.
+
+### Safe mode
+
+Naturally, remote requests and arbitrary function execution aren't particularly safe. If you'd like to use xtJSON without them, call the module like this instead:
+
+```
+const parsed = await jsonParser.safe('{ "test": "value" }');
+```
 
 ### Running tests
 

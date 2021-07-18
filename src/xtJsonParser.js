@@ -10,18 +10,20 @@ const {
   remoteFetch,
 } = require("./util");
 
-const { Obj, Arr } = require("./AstElems");
+const { Obj, Arr, _Set } = require("./AstElems");
 
 const openerTypes = {
   "{": Obj,
   "[": Arr,
+  "(": _Set,
 };
 const closerTypes = {
   "}": Obj,
   "]": Arr,
+  ")": _Set,
 };
 const excludedChars = [":", ","];
-const specialChars = ["{", "}", "[", "]", ",", ":", "\\", "\n"];
+const specialChars = ["{", "}", "[", "]", ",", ":", "\\", "\n", "(", ")"];
 
 const Strings = {
   ESCAPE: "\\",
@@ -74,7 +76,7 @@ const Strings = {
     ']',           '}'
   ]
  */
-const generatetokenArray = (jsonString) => {
+const generateTokenArray = (jsonString) => {
   const chars = jsonString.split(Strings.EMPTY);
 
   const tokenArray = [];
@@ -88,8 +90,6 @@ const generatetokenArray = (jsonString) => {
       [
         Strings.QUOTE,
         Strings.BACKTICK,
-        Strings.OPEN_BRACKET,
-        Strings.CLOSE_BRACKET,
       ].includes(char) &&
       prevChar !== Strings.ESCAPE
     ) {
@@ -132,6 +132,8 @@ const generatetokenArray = (jsonString) => {
     // If no comments or newlines, pass token through
     return true;
   });
+
+  console.log(filteredTokenArray);
 
   return filteredTokenArray;
 };
@@ -222,10 +224,15 @@ const processElem = (stack) => async (elem) => {
 
     // Handle remote fetches
     if (
-      stringStartsWith(elem, [Strings.TILDE, Strings.OPEN_BRACKET].join("")) &&
-      stringEndsWith(elem, Strings.CLOSE_BRACKET)
+      stringStartsWith(elem, [Strings.TILDE, Strings.QUOTE].join("")) &&
+      stringEndsWith(elem, Strings.QUOTE)
     ) {
       return remoteFetch(unbookmark(elem, 2, 1)).then(parseJson);
+    }
+
+    // Handle sets
+    if (stringStartsWith(elem, Strings.OPEN_BRACKET) && stringEndsWith(elem, Strings.CLOSE_BRACKET)) {
+      return unbookmark(elem).then
     }
 
     // If the string is not escaped, return the string stripped of all quotes
@@ -334,6 +341,6 @@ const parseAst = (ast) => {
  * @returns JavaScript object containing the parsed JSON
  */
 const parseJson = (jsonString) =>
-  pipe(jsonString, [generatetokenArray, generateAst, parseAst]);
+  pipe(jsonString, [generateTokenArray, generateAst, parseAst]);
 
 module.exports = parseJson;

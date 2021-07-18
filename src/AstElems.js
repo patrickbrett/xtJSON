@@ -25,7 +25,18 @@ class Arr {
   }
 }
 
+/**
+ * Class representing a set.
+ * @edges contains elements of the set
+ */
+class _Set {
+  constructor() {
+    this.edges = new Set();
+  }
+}
+
 module.exports = {
   Obj,
   Arr,
+  _Set,
 };
