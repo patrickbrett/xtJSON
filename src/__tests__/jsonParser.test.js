@@ -1,5 +1,5 @@
 const { expect } = require("@jest/globals");
-const jsonParser = require("../xtJsonParser");
+const xtJsonParser = require("../xtJsonParser");
 const { read } = require("../util");
 
 const regularTests = [
@@ -25,7 +25,7 @@ const extendedTests = [
 regularTests.forEach(([fname, desc]) => {
   test(`regular - ${desc}`, async () => {
     const jsonString = read(`./data/regular/${fname}.xtjson`);
-    const parsed = await jsonParser(jsonString);
+    const parsed = await xtJsonParser(jsonString);
     expect(parsed).toEqual(JSON.parse(jsonString));
   });
 });
@@ -34,10 +34,17 @@ extendedTests.forEach(([fname, desc]) => {
   test(`extended - ${desc}`, async () => {
     const jsonString = read(`./data/extended/${fname}.xtjson`);
     const expectedJsonString = read(`./data/extended/${fname}-expected.xtjson`);
-    const parsed = await jsonParser(jsonString);
+    const parsed = await xtJsonParser(jsonString);
     expect(parsed).toEqual(JSON.parse(expectedJsonString));
   });
 });
+
+test('extended - safe - does not load remote file', async () => {
+  const jsonString = read(`./data/extended/remote.xtjson`);
+  const expectedJsonString = read(`./data/extended/remote-expected-safe.xtjson`);
+  const parsed = await xtJsonParser.safe(jsonString);
+  expect(parsed).toEqual(JSON.parse(expectedJsonString));
+})
 
 test('extended - correctly parses file with functions', async () => {
 

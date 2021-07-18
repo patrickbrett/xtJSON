@@ -218,14 +218,14 @@ const processElem = (stack, safe) => async (elem) => {
     // Handle arithmetic expressions and functions
     if (stringBookmarkedBy(elem, Strings.BACKTICK)) {
       // Note: not sanitised!
-      // You definitely don't want to use this on any xtJSON you
-      // don't trust, as arbitrary code can be injected.
+      // Hence use safe mode on any untrusted xtJSON,
+      // otherwise arbitrary code can be injected.
       return safe ? unbookmarked : eval(unbookmarked);
     }
 
     // Handle remote fetches
     if (
-      stringStartsWith(elem, [Strings.TILDE, Strings.QUOTE].join("")) &&
+      stringStartsWith(elem, [Strings.TILDE, Strings.QUOTE].join(Strings.EMPTY)) &&
       stringEndsWith(elem, Strings.QUOTE)
     ) {
       const unbookmarked = unbookmark(elem, 2, 1);
@@ -246,7 +246,7 @@ const processElem = (stack, safe) => async (elem) => {
 /**
  * Processes the AST token array into a full AST tree.
  * @param {*} tokenArray AST array to process into a nested AST.
- * @returns nested AST built out of Obj and Arr instances.
+ * @returns nested AST built out of Obj, Arr and _Set instances.
  * 
  * Example input:
   [
