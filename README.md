@@ -9,11 +9,11 @@ This project is the natural extension of my bare bones [JSON Parser](https://git
 xtJSON allows for some pretty expressive and flexible constructs:
 ## Supported features
 
-- { "comments": "both" /* inline */ }
-- // and on their own line...
-- { "functions": `(a, b) => a + b` }
-- { "evaluation-of-inline-expressions": `1 + 2 + 3 / 8 * 15` }
-- { "requests-for": ~(https://remote.json.documents) }
+- `{ "comments": "both" /* inline */ }`
+- `// and on their own line...`
+- `{ "functions": \`(a, b) => a + b\` }`
+- `{ "evaluation-of-inline-expressions": \`1 + 2 + 3 / 8 * 15\` }`
+- `{ "requests-for": ~(https://remote.json.documents) }`
 - plus everything normal JSON can do 😊
 
 ## Should I use this in my project?
