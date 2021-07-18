@@ -2,6 +2,8 @@
 
 eXTended JSON - JSON with comments, function calls, mathematical expression evaluation and embedded remote data
 
+[![npm version](https://badge.fury.io/js/xtjson.svg)](https://npmjs.com/package/xtjson)
+
 ## About
 
 This project is the natural extension of [JSON Parser](https://github.com/patrickbrett/json-parser), which aims for feature parity with the `JSON.parse` command. The first project was built to understand how parsers work, whereas this project was built to extend on that knowledge and see how far JSON as a format can be pushed.
