@@ -11,8 +11,8 @@ xtJSON allows for some pretty expressive and flexible constructs:
 
 - `{ "comments": "both" /* inline */ }`
 - `// and on their own line...`
-- `{ "functions": \`(a, b) => a + b\` }`
-- `{ "evaluation-of-inline-expressions": \`1 + 2 + 3 / 8 * 15\` }`
+- ```{ "functions": `(a, b) => a + b` }```
+- ```{ "evaluation-of-inline-expressions": `1 + 2 + 3 / 8 * 15` }```
 - `{ "requests-for": ~(https://remote.json.documents) }`
 - plus everything normal JSON can do 😊
 
