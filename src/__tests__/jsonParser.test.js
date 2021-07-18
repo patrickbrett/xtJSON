@@ -66,3 +66,15 @@ test("extended - safe - loads function as string", async () => {
 
   expect(parsed).toEqual(JSON.parse(expectedJsonString));
 });
+
+test("extended - correctly parses set [1]", async () => {
+  const jsonString = read(`./data/extended/sets.xtjson`);
+  const parsed = await xtJsonParser(jsonString);
+  expect(parsed.set).toEqual(new Set([1, 2, 3, "string"]));
+});
+
+test("extended - correctly parses set [2]", async () => {
+  const jsonString = read(`./data/extended/sets-nested.xtjson`);
+  const parsed = await xtJsonParser(jsonString);
+  expect(parsed.set).toEqual(new Set([1, 2, 3, "string", [5, 6, 7], { 8: 9 }]));
+});
