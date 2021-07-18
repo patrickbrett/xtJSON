@@ -10,7 +10,17 @@
     "type": "git",
     "url": "git+https://github.com/patrickbrett/xtJSON.git"
   },
-  "keywords": [],
+  "keywords": [
+    "JSON",
+    "parser",
+    "magic",
+    "comments",
+    "sets",
+    "functions",
+    "expressions",
+    "remote",
+    "documents"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
