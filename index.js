@@ -1,3 +1,3 @@
-const jsonParser = require("./src/jsonParser");
+const xtJsonParser = require("./src/xtJsonParser");
 
-module.exports = jsonParser;
+module.exports = xtJsonParser;
