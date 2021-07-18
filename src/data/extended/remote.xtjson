@@ -1,0 +1,7 @@
+{
+  "local": {
+    "here": "is",
+    "some": "data"
+  },
+  "remote": ~(https://raw.githubusercontent.com/patrickbrett/json-parser/main/src/data/complex1.json)
+}

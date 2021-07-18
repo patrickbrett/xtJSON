@@ -5,6 +5,9 @@ const {
   objMap,
   stringStartsWith,
   stringEndsWith,
+  stringBookmarkedBy,
+  unbookmark,
+  remoteFetch
 } = require("./util");
 
 const { Obj, Arr } = require("./AstElems");
@@ -31,6 +34,10 @@ const Strings = {
   COMMENT_SINGLE_LINE: "//",
   COMMENT_START: "/*",
   COMMENT_END: "*/",
+  BACKTICK: '`',
+  OPEN_BRACKET: '(',
+  CLOSE_BRACKET: ')',
+  TILDE: '~'
 };
 
 /**
@@ -77,7 +84,7 @@ const generatetokenArray = (jsonString) => {
   chars.forEach((char, i) => {
     const prevChar = i ? chars[i - 1] : null;
 
-    if (char === Strings.QUOTE && prevChar !== Strings.ESCAPE) {
+    if ([Strings.QUOTE, Strings.BACKTICK, Strings.OPEN_BRACKET, Strings.CLOSE_BRACKET].includes(char) && prevChar !== Strings.ESCAPE) {
       isInsideQuotes = !isInsideQuotes;
     }
 
@@ -114,7 +121,7 @@ const generatetokenArray = (jsonString) => {
       return false;
     }
 
-    // No comments or newlines, pass token through
+    // If no comments or newlines, pass token through
     return true;
   });
 
@@ -156,7 +163,7 @@ const putSubvalue = (stack, toAdd, toAddPendingKey) => {
  * first token ('{' or '['), and so the first returned value will be for the root
  * node of the tree.
  */
-const processElem = (stack) => (elem) => {
+const processElem = (stack, promises) => (elem) => {
   // Skip colons and commas as they do not directly add meaning
   if (excludedChars.includes(elem)) return;
 
@@ -186,14 +193,30 @@ const processElem = (stack) => (elem) => {
 
   // Now identify how the value should be parsed - here is where we handle nulls, escapes, etc
   const parsedVal = (() => {
+    const unbookmarked = unbookmark(elem);
+
     // Return null values as-is
     if (elem === Strings.NULL) return null;
     // If the string is escaped, then allow its quotation marks to remain,
     // but strip out the escape characters
     if (elem.includes(Strings.ESCAPE)) {
       // Remove first and last character, which are quotation marks
-      const unquoted = elem.substr(1, elem.length - 2);
-      return replaceAll(Strings.DOUBLE_ESCAPE, Strings.EMPTY)(unquoted);
+      return replaceAll(Strings.DOUBLE_ESCAPE, Strings.EMPTY)(unbookmarked);
+    }
+
+    // Handle arithmetic expressions and functions
+    if (stringBookmarkedBy(elem, Strings.BACKTICK)) {
+      // Note: not sanitised!
+      // You definitely don't want to use this on any xtJSON you
+      // don't trust, as arbitrary code can be injected.
+      return eval(unbookmarked);
+    }
+
+    // Handle remote fetches
+    if (stringStartsWith(elem, [Strings.TILDE, Strings.OPEN_BRACKET].join('')) && stringEndsWith(elem, Strings.CLOSE_BRACKET)) {
+      const promise = remoteFetch(unbookmark(elem, 2, 1));
+      promises.push({ promise });
+      return { promise };
     }
 
     // If the string is not escaped, return the string stripped of all quotes
@@ -202,7 +225,8 @@ const processElem = (stack) => (elem) => {
     return Number(strippedElem);
   })();
 
-  // The value stripped of quotes will always be used as a key, even if the actual value is a number or similar
+  // The value stripped of quotes will always be used as a key,
+  // even if the actual value is a number or similar
   putSubvalue(stack, parsedVal, strippedElem);
 };
 
@@ -240,11 +264,12 @@ const processElem = (stack) => (elem) => {
  */
 const generateAst = (tokenArray) => {
   const stack = [];
+  const promises = [];
   // We reference the first element as processElem will always return the root node
   // of the tree when it is called on the first element.
   // We must process all elements however, as these become children of the root.
-  const tree = tokenArray.map(processElem(stack))[0];
-  return tree;
+  const tree = tokenArray.map(processElem(stack, promises))[0];
+  return { ast: tree, promises };
 };
 
 /**
@@ -288,6 +313,19 @@ const parseAst = (ast) => {
   }
 };
 
+const parseAstWrapper = ({ ast, promises }) => ({ jsObject: parseAst(ast), promises });
+
+const awaitPromises = async ({ jsObject, promises }) => {
+  await Promise.all(promises.map(p => p.promise));
+  // promises.forEach(p => {
+  //   console.log(p);
+  //   p.promise.then(res => {
+  //     console.log(res);
+  //   });
+  // })
+  return jsObject;
+}
+
 /**
  * Compiles the relevant functions into a pipeline consisting of generating an AST array,
  * turning that array into an actual AST, and then parsing that AST into a JSON object.
@@ -295,6 +333,6 @@ const parseAst = (ast) => {
  * @returns JavaScript object containing the parsed JSON
  */
 const parseJson = (jsonString) =>
-  pipe(jsonString, [generatetokenArray, generateAst, parseAst]);
+  pipe(jsonString, [generatetokenArray, generateAst, parseAstWrapper, awaitPromises]);
 
 module.exports = parseJson;

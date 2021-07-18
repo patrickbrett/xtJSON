@@ -1,6 +1,7 @@
 const fs = require("fs");
 const util = require("util");
 const path = require("path");
+const fetch = require("node-fetch");
 
 /**
  * Takes a relative filename and makes it absolute using the path module.
@@ -47,12 +48,12 @@ const write = (fname, data) =>
  * @param {*} funcs functions to pipe along
  * @returns output of the last function
  */
-const pipe = (init, funcs) => {
+const pipe = async (init, funcs) => {
   let out = init;
-  funcs.forEach((func) => {
-    out = func(out);
+  for (func of funcs) {
+    out = await func(out);
     console.log(out);
-  });
+  }
   return out;
 };
 
@@ -90,6 +91,19 @@ const stringStartsWith = (string, startsWith) =>
 const stringEndsWith = (string, endsWith) =>
   string.substr(string.length - endsWith.length) === endsWith;
 
+/**
+ * Returns whether a string starts AND ends with a particular substring.
+ * 
+ * @param {*} string string to search
+ * @param {*} bookmark substring to find
+ * @returns whether the string starts AND ends with the bookmark
+ */
+const stringBookmarkedBy = (string, bookmark) => [stringStartsWith, stringEndsWith].every(f => f(string, bookmark));
+
+const unbookmark = (string, left = 1, right = 1) => string.substr(left, string.length - left - right);
+
+const remoteFetch = url => fetch(url).then(res => res.json());
+
 module.exports = {
   last,
   inspect,
@@ -100,4 +114,7 @@ module.exports = {
   objMap,
   stringStartsWith,
   stringEndsWith,
+  stringBookmarkedBy,
+  unbookmark,
+  remoteFetch
 };
