@@ -38,3 +38,7 @@ extendedTests.forEach(([fname, desc]) => {
     expect(parsed).toEqual(JSON.parse(expectedJsonString));
   });
 });
+
+test('extended - correctly parses file with functions', async () => {
+
+})

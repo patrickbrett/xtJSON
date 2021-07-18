@@ -133,8 +133,6 @@ const generateTokenArray = (jsonString) => {
     return true;
   });
 
-  console.log(filteredTokenArray);
-
   return filteredTokenArray;
 };
 
@@ -176,7 +174,7 @@ const putSubvalue = (stack, toAdd, toAddPendingKey) => {
  * first token ('{' or '['), and so the first returned value will be for the root
  * node of the tree.
  */
-const processElem = (stack) => async (elem) => {
+const processElem = (stack, safe) => async (elem) => {
   // Skip colons and commas as they do not directly add meaning
   if (excludedChars.includes(elem)) return;
 
@@ -222,7 +220,7 @@ const processElem = (stack) => async (elem) => {
       // Note: not sanitised!
       // You definitely don't want to use this on any xtJSON you
       // don't trust, as arbitrary code can be injected.
-      return eval(unbookmarked);
+      return safe ? unbookmarked : eval(unbookmarked);
     }
 
     // Handle remote fetches
@@ -230,7 +228,8 @@ const processElem = (stack) => async (elem) => {
       stringStartsWith(elem, [Strings.TILDE, Strings.QUOTE].join("")) &&
       stringEndsWith(elem, Strings.QUOTE)
     ) {
-      return remoteFetch(unbookmark(elem, 2, 1)).then(parseJson);
+      const unbookmarked = unbookmark(elem, 2, 1);
+      return safe ? unbookmarked : remoteFetch(unbookmarked).then(parseJson);
     }
 
     // If the string is not escaped, return the string stripped of all quotes
@@ -276,14 +275,14 @@ const processElem = (stack) => async (elem) => {
     pendingKey: null
   }
  */
-const generateAst = async (tokenArray) => {
+const generateAst = ({ safe }) => async (tokenArray) => {
   const stack = [];
   // We reference the first element as processElem will always return the root node
   // of the tree when it is called on the first element.
   // We must process all elements however, as these become children of the root.
   let root = null;
   for (elem of tokenArray) {
-    const tree = await processElem(stack)(elem);
+    const tree = await processElem(stack, safe)(elem);
     if (!root) {
       root = tree;
     }
@@ -341,7 +340,9 @@ const parseAst = (ast) => {
  * @param {*} jsonString stringified JSON to parse
  * @returns JavaScript object containing the parsed JSON
  */
-const parseJson = (jsonString) =>
-  pipe(jsonString, [generateTokenArray, generateAst, parseAst]);
+const parseJson = (safe) => (jsonString) =>
+  pipe(jsonString, [generateTokenArray, generateAst({ safe }), parseAst]);
 
-module.exports = parseJson;
+module.exports = parseJson(false);
+
+module.exports.safe = parseJson(true);
