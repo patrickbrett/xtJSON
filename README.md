@@ -126,10 +126,14 @@ Note that embedded data is _itself_ treated as xtJSON, and therefore allows comm
 
 ### Using the module
 
-This module is currently not on NPM, so you will need to clone it locally. You can then import like so:
+Install like this:
+
+`npm i xtjson`
+
+Then import:
 
 ```
-const jsonParser = require('./index'); // replace with appropriate path to index of the module
+const jsonParser = require('xtjson');
 
 const run = async () => {
   const parsed = await jsonParser('{ "test": "value" }');
@@ -138,6 +142,8 @@ const run = async () => {
 
 run();
 ```
+
+Note that invocations are async for consistency whether or note remote data is imported.
 
 See `src/example.js` for a more elaborate example that reads a file, parses the output and writes back to another file.
 
