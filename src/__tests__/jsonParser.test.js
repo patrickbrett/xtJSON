@@ -48,4 +48,21 @@ test("extended - safe - does not load remote file", async () => {
   expect(parsed).toEqual(JSON.parse(expectedJsonString));
 });
 
-test("extended - correctly parses file with functions", async () => {});
+test("extended - correctly parses file with functions", async () => {
+  const jsonString = read(`./data/extended/functions.xtjson`);
+  const parsed = await xtJsonParser(jsonString);
+
+  expect(parsed.add(2, 56)).toEqual(58);
+  expect(parsed.multiply(3, 7)).toEqual(21);
+  expect(parsed.seven).toEqual(7);
+});
+
+test("extended - safe - loads function as string", async () => {
+  const jsonString = read(`./data/extended/functions.xtjson`);
+  const expectedJsonString = read(
+    `./data/extended/functions-expected-safe.xtjson`
+  );
+  const parsed = await xtJsonParser.safe(jsonString);
+
+  expect(parsed).toEqual(JSON.parse(expectedJsonString));
+});
