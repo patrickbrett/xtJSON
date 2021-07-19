@@ -211,6 +211,7 @@ const processElem =
       if (elem === Strings.NULL) return null;
       if (elem === Strings.TRUE) return true;
       if (elem === Strings.FALSE) return false;
+      
       // If the string is escaped, then allow its quotation marks to remain,
       // but strip out the escape characters
       if (elem.includes(Strings.ESCAPE)) {
