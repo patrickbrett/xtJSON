@@ -143,7 +143,7 @@ const run = async () => {
 run();
 ```
 
-Note that invocations are async for consistency whether or note remote data is imported.
+Note that invocations are async for consistency whether or not remote data is imported.
 
 See `src/example.js` for a more elaborate example that reads a file, parses the output and writes back to another file.
 

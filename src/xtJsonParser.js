@@ -33,6 +33,8 @@ const Strings = {
   EMPTY: "",
   NEWLINE: "\n",
   NULL: "null",
+  TRUE: "true",
+  FALSE: "false",
   COMMENT_SINGLE_LINE: "//",
   COMMENT_START: "/*",
   COMMENT_END: "*/",
@@ -205,8 +207,10 @@ const processElem =
     const parsedVal = await (() => {
       const unbookmarked = unbookmark(elem);
 
-      // Return null values as-is
+      // Return null and boolean values as-is
       if (elem === Strings.NULL) return null;
+      if (elem === Strings.TRUE) return true;
+      if (elem === Strings.FALSE) return false;
       // If the string is escaped, then allow its quotation marks to remain,
       // but strip out the escape characters
       if (elem.includes(Strings.ESCAPE)) {
