@@ -1,6 +1,6 @@
 {
   "name": "xtjson",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "eXTended JSON - JSON with comments, function calls, mathematical expression evaluation and embedded remote data",
   "main": "index.js",
   "scripts": {
