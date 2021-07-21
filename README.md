@@ -26,7 +26,7 @@ Sure, I'm not going to stop you. This parser can do some pretty cool stuff and I
 
 Just be aware that there are some security concerns. xtJSON is powerful enough that it effectively allows you to embed arbitrary JavaScript code in config files, and the parser itself makes web requests that the documents specify. It's enough to give your company's compliance department an aneurysm or three, even with the 'safe mode' option which blocks the more dangerous features.
 
-Not to mention this is just a side project and I don't plan on maintaining it actively.
+Not to mention this is just a side project and I don't plan on maintaining it actively. The parser loads the whole document in one go and hasn't been tested on large files.
 
 I just wanted to learn about syntax trees, mkay? 😉
 
