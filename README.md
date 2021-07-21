@@ -48,7 +48,7 @@ I just wanted to learn about syntax trees, mkay? 😉
   "seven": `2 * 10 - 13`,
 
   // You can embed remote JSON documents and they will be loaded when parsed
-  "remote": ~"https://raw.githubusercontent.com/patrickbrett/json-parser/main/src/data/complex1.json"
+  "e.g.": ~"https://raw.githubusercontent.com/patrickbrett/json-parser/main/src/data/complex1.json"
 
   /*
   And finally, it supports "safe mode" which turns off the remote embedding and functions
