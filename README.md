@@ -37,7 +37,7 @@ I just wanted to learn about syntax trees, mkay? 😉
 ```
 {
   // xtJSON is a superset of JSON
-  "array": [1, "string", { "objects": "too" }, true, false, null, { "nested": { "objects": "also work" }}],
+  "array": [1, "string", true, { "nested": { "objects": "also work" }}],
 
   // It supports JavaScript sets
   "JavaScript sets": (1, 2, 3, "sets are supported!"),
