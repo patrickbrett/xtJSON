@@ -12,13 +12,13 @@ xtJSON allows for some pretty expressive and flexible constructs:
 
 ## Supported features
 
-- `{ "comments": "both" /* inline */ }`
-- `// and on their own line...`
-- `{ "sets": (1, 2, 3, 4) }`
-- `` { "functions": `(a, b) => a + b` } ``
-- `` { "evaluation-of-inline-expressions": `1 + 2 + 3 / 8 * 15` } ``
-- `{ "requests-for": ~"https://remote.json.documents" }`
-- plus everything normal JSON can do 😊
+-   `{ "comments": "both" /* inline */ }`
+-   `// and on their own line...`
+-   `{ "sets": (1, 2, 3, 4) }`
+-   `` { "functions": `(a, b) => a + b` } ``
+-   `` { "evaluation-of-inline-expressions": `1 + 2 + 3 / 8 * 15` } ``
+-   `{ "requests-for": ~"https://remote.json.documents" }`
+-   plus everything normal JSON can do 😊
 
 ## Should I use this in my project?
 
@@ -31,6 +31,31 @@ Not to mention this is just a side project and I don't plan on maintaining it ac
 I just wanted to learn about syntax trees, mkay? 😉
 
 ## Feature syntax
+
+### At a glance
+
+```
+{
+  // xtJSON is a superset of JSON
+  "array": [1, "string", { "objects": "too" }, true, false, null, { "nested": { "objects": "also work" }}],
+
+  // It supports JavaScript sets
+  "JavaScript sets": (1, 2, 3, "sets are supported!"),
+
+  // As well as functions and maths expressions
+  "add": `(a, b) => a + b`,
+  "multiply": `(a, b) => a * b`,
+  "seven": `2 * 10 - 13`,
+
+  // You can embed remote JSON documents and they will be loaded when parsed
+  "remote": ~"https://raw.githubusercontent.com/patrickbrett/json-parser/main/src/data/complex1.json"
+
+  /*
+  And finally, it supports "safe mode" which turns off the remote embedding and functions
+  while keeping the comments and sets. This is useful for documents you don't fully trust.
+  */
+}
+```
 
 ### Comments
 
